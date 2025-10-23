@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMI Eligibility & Calculator</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0d0d0d, #1a1a40);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .card {
+    background: #14143f;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    width: 350px;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0 14px 0;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+  }
+  button {
+    background: linear-gradient(90deg, #6a5acd, #836fff);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover {
+    opacity: 0.9;
+  }
+  .result {
+    margin-top: 15px;
+    background: #18184d;
+    padding: 10px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>🏦 EMI Eligibility</h2>
+    <label>Age</label>
+    <input id="age" type="number" min="18" value="30">
+
+    <label>Nationality</label>
+    <select id="nationality">
+      <option value="expat">Expat</option>
+      <option value="uaen">UAE National</option>
+    </select>
+
+    <label>AECB Score</label>
+    <input id="aecb" type="number" min="300" max="900" value="710">
+
+    <label>Monthly Income (AED)</label>
+    <input id="income" type="number" value="10000">
+
+    <label>Loan Amount (AED)</label>
+    <input id="amount" type="number" value="100000">
+
+    <label>Loan Tenure (Years)</label>
+    <input id="tenure" type="number" min="1" max="7" value="5">
+
+    <button onclick="calculateEMI()">Check Eligibility</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+function calculateEMI() {
+  const age = parseInt(document.getElementById('age').value);
+  const nationality = document.getElementById('nationality').value;
+  const aecb = parseInt(document.getElementById('aecb').value);
+  const income = parseFloat(document.getElementById('income').value);
+  const amount = parseFloat(document.getElementById('amount').value);
+  const tenure = parseInt(document.getElementById('tenure').value);
+
+  // -----------------------------
+  // Fixed Eligibility Rules
+  // -----------------------------
+  const minAECB = 650;
+  const minIncomeApproved = 5000;
+  const maxAgeExpat = 60;
+  const maxAgeUAEN = 65;
+
+  let eligible = true;
+  let message = "";
+
+  if (aecb < minAECB) { eligible = false; message = "AECB score below 650"; }
+  else if (income < minIncomeApproved) { eligible = false; message = "Income below AED 5000"; }
+  else if (nationality === "expat" && age > maxAgeExpat) { eligible = false; message = "Expat age exceeds 60"; }
+  else if (nationality === "uaen" && age > maxAgeUAEN) { eligible = false; message = "UAE National age exceeds 65"; }
+
+  if (!eligible) {
+    document.getElementById('result').innerHTML = `<b>❌ Not Eligible:</b> ${message}`;
+    return;
+  }
+
+  // -----------------------------
+  // Example Rate Logic
+  // -----------------------------
+  let rate;
+  if (aecb >= 720) rate = 5.99;
+  else if (aecb >= 680) rate = 6.49;
+  else rate = 7.5;
+
+  // -----------------------------
+  // EMI Calculation Formula
+  // -----------------------------
+  const r = rate / (12 * 100);
+  const n = tenure * 12;
+  const emi = (amount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
+  document.getElementById('result').innerHTML = `
+    ✅ <b>Eligible</b><br><br>
+    <b>Interest Rate:</b> ${rate}%<br>
+    <b>Monthly EMI:</b> AED ${emi.toFixed(2)}
+  `;
+}
+</script>
+</body>
+</html>
